@@ -3,1155 +3,945 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FMCG & 零售 BI 看板 Skill</title>
+  <title>业务数据计算方法与实践</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --text-primary: #111;
-      --text-secondary: #64748b;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-deep: #0ea5e9;
-      --bg: #fafafa;
-      --card-bg: rgba(255, 255, 255, 0.5);
-      --card-border: rgba(14, 14, 12, 0.08);
-      --card-shadow: 0 18px 55px rgba(14, 14, 12, 0.06);
-      --radius: 20px;
-      --radius-sm: 12px;
-      --radius-pill: 999px;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Playfair Display', Georgia, serif;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font-sans);
-      background: var(--bg);
-      color: var(--text-primary);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
-    }
-
-    /* ── Animated Background Blobs ── */
-    .bg-blobs {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(60px);
-      will-change: transform;
-    }
-
-    .blob-1 {
-      top: -15%;
-      right: -8%;
-      width: 70%;
-      height: 110%;
-      background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(56,189,248,0.35) 0%, rgba(125,211,252,0.2) 40%, transparent 70%);
-      animation: flow1 18s ease-in-out infinite;
-    }
-
-    .blob-2 {
-      top: 15%;
-      right: 10%;
-      width: 45%;
-      height: 55%;
-      background: radial-gradient(ellipse 70% 50% at 60% 50%, rgba(34,211,238,0.3) 0%, rgba(103,232,249,0.15) 40%, transparent 70%);
-      animation: flow2 22s ease-in-out infinite;
-    }
-
-    .blob-3 {
-      bottom: -5%;
-      left: -5%;
-      width: 55%;
-      height: 45%;
-      background: radial-gradient(ellipse 60% 40% at 50% 80%, rgba(14,165,233,0.25) 0%, rgba(56,189,248,0.12) 40%, transparent 60%);
-      animation: flow3 20s ease-in-out infinite;
-    }
-
-    @keyframes flow1 {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(-30px, 20px) rotate(2deg); }
-      66% { transform: translate(20px, -15px) rotate(-1deg); }
-    }
-
-    @keyframes flow2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(-25px, 15px) scale(1.05); }
-    }
-
-    @keyframes flow3 {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(20px, -20px); }
-    }
-
-    /* ── Navigation ── */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 50;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      background: rgba(250, 250, 250, 0.7);
-      border-bottom: 0.5px solid rgba(14, 14, 12, 0.06);
-      transition: background 300ms ease;
-    }
-
-    .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-
-    .nav-logo {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 1.35rem;
-      font-weight: 500;
-      color: var(--text-primary);
-      text-decoration: none;
-      letter-spacing: -0.02em;
-    }
-
-    .nav-logo span {
-      color: var(--accent-deep);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 36px;
-    }
-
-    .nav-links a {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-weight: 400;
-      transition: color 150ms ease;
-    }
-
-    .nav-links a:hover {
-      color: var(--text-primary);
-    }
-
-    .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 20px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #fff;
-      background: var(--accent-deep);
-      border: none;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 180ms ease;
-      box-shadow: 0 1px 8px rgba(14,165,233,0.2);
-    }
-
-    .nav-cta:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    /* ── Hero Section ── */
-    .hero {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 120px 32px 80px;
-    }
-
-    .hero-content {
-      max-width: 900px;
-      animation: fadeInUp 0.8s ease-out;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      background: rgba(14,165,233,0.08);
-      border: 0.5px solid rgba(14,165,233,0.15);
-      border-radius: var(--radius-pill);
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--accent-deep);
-      margin-bottom: 32px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .hero h1 {
-      font-family: var(--font-serif);
-      font-weight: 400;
-      line-height: 1.1;
-      margin-bottom: 28px;
-    }
-
-    .hero h1 .line1 {
-      display: block;
-      font-size: clamp(1.8rem, 4vw, 3.2rem);
-      font-style: italic;
-      color: var(--text-primary);
-    }
-
-    .hero h1 .line2 {
-      display: block;
-      font-size: clamp(2.2rem, 5.5vw, 4.2rem);
-      font-style: italic;
-      color: var(--text-primary);
-      margin-top: 4px;
-    }
-
-    .hero h1 .accent {
-      color: var(--accent-deep);
-    }
-
-    .hero-sub {
-      font-size: clamp(1rem, 1.5vw, 1.2rem);
-      font-weight: 300;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      max-width: 600px;
-      margin: 0 auto 40px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 32px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #fff;
-      background: var(--accent-deep);
-      border: none;
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 180ms ease;
-      box-shadow: 0 2px 12px rgba(14,165,233,0.25);
-    }
-
-    .btn-primary:hover {
-      opacity: 0.92;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 32px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text-primary);
-      background: rgba(255,255,255,0.6);
-      border: 0.5px solid rgba(14,14,12,0.1);
-      border-radius: var(--radius-pill);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 180ms ease;
-      backdrop-filter: blur(8px);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.9);
-      border-color: rgba(14,14,12,0.18);
-      transform: translateY(-1px);
-    }
-
-    .hero-meta {
-      margin-top: 48px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Section Common ── */
-    section {
-      position: relative;
-      z-index: 1;
-      padding: 100px 32px;
-    }
-
-    .section-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent-deep);
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-family: var(--font-serif);
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-weight: 400;
-      font-style: italic;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      color: var(--text-primary);
-    }
-
-    .section-desc {
-      font-size: 1.05rem;
-      font-weight: 300;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      max-width: 640px;
-      margin-bottom: 56px;
-    }
-
-    /* ── Glass Card ── */
-    .glass-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 0.5px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 36px;
-      box-shadow: var(--card-shadow);
-      transition: transform 300ms ease, box-shadow 300ms ease;
-    }
-
-    .glass-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 24px 64px rgba(14, 14, 12, 0.08);
-    }
-
-    /* ── Positioning Section ── */
-    .positioning-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .positioning-card {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .positioning-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      font-size: 1.3rem;
-    }
-
-    .positioning-card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .positioning-card p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    /* ── Industry Section ── */
-    .industry-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .industry-card {
-      text-align: center;
-      padding: 32px 20px;
-      cursor: default;
-    }
-
-    .industry-card .icon {
-      font-size: 2.2rem;
-      margin-bottom: 14px;
-      display: block;
-    }
-
-    .industry-card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .industry-card p {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    /* ── Roles Section ── */
-    .roles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 16px;
-    }
-
-    .role-card {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      padding: 24px 28px;
-    }
-
-    .role-emoji {
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      width: 40px;
-      text-align: center;
-    }
-
-    .role-card h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 3px;
-    }
-
-    .role-card p {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    /* ── Steps Section ── */
-    .steps-timeline {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .step-item {
-      display: grid;
-      grid-template-columns: 80px 1fr;
-      gap: 0;
-      position: relative;
-    }
-
-    .step-marker {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .step-num {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(14,165,233,0.25);
-      position: relative;
-      z-index: 2;
-    }
-
-    .step-line {
-      width: 2px;
-      flex: 1;
-      background: linear-gradient(to bottom, rgba(14,165,233,0.3), rgba(14,165,233,0.08));
-      margin: 4px 0;
-    }
-
-    .step-content {
-      padding: 8px 0 48px 0;
-    }
-
-    .step-content h3 {
-      font-family: var(--font-serif);
-      font-size: 1.4rem;
-      font-weight: 400;
-      font-style: italic;
-      margin-bottom: 6px;
-    }
-
-    .step-content .step-goal {
-      font-size: 0.85rem;
-      color: var(--accent-deep);
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
-
-    .step-content p {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .step-content ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .step-content ul li {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      padding: 4px 0;
-      padding-left: 18px;
-      position: relative;
-      line-height: 1.5;
-    }
-
-    .step-content ul li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 11px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
-
-    /* ── Components Table ── */
-    .table-wrapper {
-      overflow-x: auto;
-      margin-top: 20px;
-    }
-
-    .components-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 0.88rem;
-    }
-
-    .components-table thead th {
-      text-align: left;
-      padding: 14px 20px;
-      font-weight: 600;
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      border-bottom: 1px solid rgba(14,14,12,0.08);
-      background: rgba(255,255,255,0.4);
-    }
-
-    .components-table thead th:first-child {
-      border-radius: var(--radius-sm) 0 0 0;
-    }
-
-    .components-table thead th:last-child {
-      border-radius: 0 var(--radius-sm) 0 0;
-    }
-
-    .components-table tbody td {
-      padding: 13px 20px;
-      border-bottom: 0.5px solid rgba(14,14,12,0.05);
-      color: var(--text-secondary);
-    }
-
-    .components-table tbody tr:hover td {
-      background: rgba(255,255,255,0.5);
-    }
-
-    .components-table tbody td:first-child {
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    /* ── Deliverables Section ── */
-    .deliverables-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .deliverable-card {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .deliverable-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      border-radius: var(--radius) var(--radius) 0 0;
-    }
-
-    .deliverable-card:nth-child(1)::before {
-      background: linear-gradient(90deg, var(--accent), var(--accent-deep));
-    }
-
-    .deliverable-card:nth-child(2)::before {
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    }
-
-    .deliverable-card:nth-child(3)::before {
-      background: linear-gradient(90deg, #10b981, #059669);
-    }
-
-    .deliverable-card .d-icon {
-      font-size: 1.8rem;
-      margin-bottom: 16px;
-    }
-
-    .deliverable-card h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .deliverable-card p {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    /* ── Notes Section ── */
-    .notes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    .note-card {
-      padding: 28px;
-    }
-
-    .note-card .note-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(14,165,233,0.1);
-      color: var(--accent-deep);
-      font-size: 0.78rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-
-    .note-card h4 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .note-card p {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-    }
-
-    /* ── Footer ── */
-    footer {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 60px 32px 48px;
-      border-top: 0.5px solid rgba(14,14,12,0.06);
-    }
-
-    footer p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    footer .footer-logo {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 1.1rem;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-
-      .hero { padding: 100px 24px 60px; }
-
-      section { padding: 64px 20px; }
-
-      .step-item { grid-template-columns: 56px 1fr; }
-
-      .step-num { width: 40px; height: 40px; font-size: 0.85rem; }
-
-      .positioning-grid,
-      .roles-grid,
-      .deliverables-grid { grid-template-columns: 1fr; }
-
-      .industry-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    /* ── Scroll Animations ── */
-    .animate-in {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-
-    .animate-in.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-  <!-- Background Blobs -->
-  <div class="bg-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
-
-  <!-- Navigation -->
-  <nav>
-    <div class="nav-inner">
-      <a href="#" class="nav-logo">BI<span>Skill</span></a>
-      <div class="nav-links">
-        <a href="#positioning">定位</a>
-        <a href="#industries">行业</a>
-        <a href="#roles">角色</a>
-        <a href="#workflow">流程</a>
-        <a href="#components">组件</a>
-        <a href="#deliverables">交付物</a>
-      </div>
-      <a href="#workflow" class="nav-cta">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        开始使用
-      </a>
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-brand">小田数字笔记</div>
+    <div class="nav-links">
+      <a href="#how">怎么用本书</a>
+      <a href="#catalog">目录</a>
+      <a href="#faq">常见问题</a>
     </div>
   </nav>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <div class="hero-badge">FMCG & 零售行业</div>
-      <h1>
-        <span class="line1">标准化</span>
-        <span class="line2">BI 看板 <span class="accent">Skill</span></span>
-      </h1>
-      <p class="hero-sub">
-        帮助数据分析师为快消品及零售行业制作标准化 BI 看板，覆盖零食量贩、饮料、乳制品、商超、便利店、社区零售六大行业。
-      </p>
-      <div class="hero-actions">
-        <a href="#workflow" class="btn-primary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          五步工作流
-        </a>
-        <a href="#deliverables" class="btn-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          查看交付物
-        </a>
-      </div>
-      <p class="hero-meta">Quick BI · Markdown · 标准化流程</p>
+    <div class="eyebrow">● 持续更新中 · 零售数据方法论</div>
+    <h1>业务数据计算<br><span class="accent">方法与实践</span></h1>
+    <p class="lede">零食连锁零售一线九年沉淀，从指标设计到单元经济，从用户增长到供应链优化，系统性拆解零售数据分析的核心方法论与计算逻辑。</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="#catalog">开始阅读 →</a>
+      <a class="btn-ghost" href="#how">这本书怎么用</a>
     </div>
   </section>
 
-  <!-- Positioning -->
-  <section id="positioning">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">Skill 定位</p>
-        <h2 class="section-title">三大标准化交付物</h2>
-        <p class="section-desc">本 Skill 为快消品及零售行业提供完整的 BI 看板解决方案，从需求诊断到最终交付，全流程覆盖。</p>
+  <!-- Stats -->
+  <div class="section" style="padding-top: 0; padding-bottom: 60px;">
+    <div class="stat-row">
+      <div class="stat-cell"><div class="num">24</div><div class="label">收录主题</div></div>
+      <div class="stat-cell"><div class="num">07</div><div class="label">核心模块</div></div>
+      <div class="stat-cell"><div class="num">9yr</div><div class="label">一线经验</div></div>
+      <div class="stat-cell"><div class="num">∞</div><div class="label">持续更新</div></div>
+    </div>
+  </div>
+
+  <!-- How Section -->
+  <section class="section section--alt" id="how">
+    <div class="section-title">
+      <h2>这本书怎么用</h2>
+      <p>每篇内容遵循「争议 → 推导 → 复用」的结构</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-cell">
+        <div class="step-num">01</div>
+        <h3>争议</h3>
+        <p>每篇都源于一次具体的业务争论，而非凭空设计的"最佳实践"。真实场景中的口径冲突、指标博弈、方法论之争，才是最好的学习素材。</p>
       </div>
-      <div class="positioning-grid animate-in">
-        <div class="glass-card positioning-card">
-          <div class="positioning-icon" style="background:rgba(14,165,233,0.08);">📄</div>
-          <div>
-            <h3>PRD 文档</h3>
-            <p>完整的产品需求文档，明确看板的业务目标、使用场景、数据来源和功能需求。</p>
-          </div>
-        </div>
-        <div class="glass-card positioning-card">
-          <div class="positioning-icon" style="background:rgba(99,102,241,0.08);">📊</div>
-          <div>
-            <h3>看板设计稿</h3>
-            <p>基于 Quick BI 组件的可视化设计方案，包含页面布局、图表类型和联动逻辑。</p>
-          </div>
-        </div>
-        <div class="glass-card positioning-card">
-          <div class="positioning-icon" style="background:rgba(16,185,129,0.08);">📋</div>
-          <div>
-            <h3>指标字典</h3>
-            <p>标准化的指标定义表格，确保口径一致、消除歧义、支撑数据开发。</p>
-          </div>
-        </div>
+      <div class="how-cell">
+        <div class="step-num">02</div>
+        <h3>推导</h3>
+        <p>不只给结论，给完整推导过程：定义是什么、阈值怎么定、SQL怎么写、模型怎么建。知其然，更知其所以然。</p>
+      </div>
+      <div class="how-cell">
+        <div class="step-num">03</div>
+        <h3>复用</h3>
+        <p>每篇结尾抽象出一条可迁移的方法论原则。从零食零售出发，迁移到任何需要数据驱动决策的业务场景。</p>
       </div>
     </div>
   </section>
 
-  <!-- Industries -->
-  <section id="industries">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">覆盖行业</p>
-        <h2 class="section-title">六大零售行业</h2>
-        <p class="section-desc">针对每个行业的独特业务特征，提供定制化的指标体系和看板模板。</p>
+  <!-- Catalog Section -->
+  <section class="section" id="catalog">
+    <div class="section-title">
+      <h2>目录</h2>
+      <p>七篇内容，从思维框架到综合实战</p>
+    </div>
+
+    <!-- Module Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-filter="all">全部</div>
+      <div class="tab" data-filter="m1">基础篇</div>
+      <div class="tab" data-filter="m2">用户篇</div>
+      <div class="tab" data-filter="m3">经济模型篇</div>
+      <div class="tab" data-filter="m4">流量与营销篇</div>
+      <div class="tab" data-filter="m5">商品与品类篇</div>
+      <div class="tab" data-filter="m6">供应链篇</div>
+      <div class="tab" data-filter="m7">综合实战篇</div>
+    </div>
+
+    <div class="article-list">
+
+      <!-- Part 1: 基础篇 -->
+      <div class="part-header" data-mod="m1">
+        <div class="part-num">第一篇</div>
+        <h2>基础篇：业务分析的思维框架与统计工具</h2>
       </div>
-      <div class="industry-grid animate-in">
-        <div class="glass-card industry-card">
-          <span class="icon">🏪</span>
-          <h3>零食量贩</h3>
-          <p>坪效 · 散装 · SKU周转 · 会员复购</p>
+
+      <a class="article-card" href="articles/ch01.html" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第1章 · 业务数据分析的认知框架</span>
+          <span class="status-badge done">已发布</span>
         </div>
-        <div class="glass-card industry-card">
-          <span class="icon">🥤</span>
-          <h3>饮料</h3>
-          <p>季节性 · 渠道铺货 · 动销率 · 冷链</p>
+        <h3>业务数据分析的认知框架</h3>
+        <p>分析师的三重角色（翻译者/侦探/建模者）、数据到决策的链路、三种口径的三角冲突、指标口径文档的建立方法。</p>
+        <div class="card-foot">
+          <span>3200字</span><span>#认知框架</span><span>#口径管理</span>
+          <span class="arrow">阅读全文 →</span>
         </div>
-        <div class="glass-card industry-card">
-          <span class="icon">🥛</span>
-          <h3>乳制品</h3>
-          <p>保质期 · 库龄 · 冷链 · 订阅复购</p>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第2章 · 指标体系设计</span>
+          <span class="status-badge draft">待发布</span>
         </div>
-        <div class="glass-card industry-card">
-          <span class="icon">🏬</span>
-          <h3>商超</h3>
-          <p>大促节奏 · 品类管理 · 联营扣点</p>
+        <h3>2.1 北极星指标（NSM）的选取逻辑与常见误区</h3>
+        <p>如何选取真正能驱动业务增长的北极星指标，以及选取过程中最常见的三个误区。</p>
+        <div class="card-foot">
+          <span>#北极星指标</span><span>#NSM</span>
+          <span class="arrow">阅读全文 →</span>
         </div>
-        <div class="glass-card industry-card">
-          <span class="icon">🛒</span>
-          <h3>便利店</h3>
-          <p>鲜食占比 · 时段分布 · 即时消费</p>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第2章 · 指标体系设计</span>
+          <span class="status-badge draft">待发布</span>
         </div>
-        <div class="glass-card industry-card">
-          <span class="icon">🏘️</span>
-          <h3>社区零售</h3>
-          <p>社群运营 · 到家履约 · 私域流量</p>
+        <h3>2.2 OSM模型（Objective-Strategy-Measure）</h3>
+        <p>用OSM模型将业务目标拆解为可衡量的策略与指标，建立目标驱动的指标体系。</p>
+        <div class="card-foot">
+          <span>#OSM模型</span><span>#目标拆解</span>
+          <span class="arrow">阅读全文 →</span>
         </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第2章 · 指标体系设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>2.3 指标树拆解方法：连乘法、分组法、漏斗法</h3>
+        <p>三种核心指标树拆解方法的原理、适用场景与实操案例。</p>
+        <div class="card-foot">
+          <span>#指标树</span><span>#拆解方法</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第2章 · 指标体系设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>2.4 指标体系的反模式：虚荣指标、KPI造假空间</h3>
+        <p>识别指标体系中的常见陷阱——虚荣指标如何误导决策，KPI如何留下造假空间。</p>
+        <div class="card-foot">
+          <span>#反模式</span><span>#虚荣指标</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第2章 · 指标体系设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>2.5 案例：零食集合店的指标树搭建实战</h3>
+        <p>从零开始为一家零食集合店搭建完整的指标树，覆盖从获客到复购的全链路。</p>
+        <div class="card-foot">
+          <span>#实战案例</span><span>#零食集合店</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第3章 · 统计基础与实验设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>3.1 描述性统计回顾：分布、离散度、异常值处理</h3>
+        <p>业务数据分析中最常用的描述性统计方法，以及异常值的识别与处理策略。</p>
+        <div class="card-foot">
+          <span>#描述性统计</span><span>#异常值</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第3章 · 统计基础与实验设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>3.2 假设检验与显著性：p值的正确使用与误用</h3>
+        <p>p值到底意味着什么？业务场景中假设检验的正确姿势与常见误用。</p>
+        <div class="card-foot">
+          <span>#假设检验</span><span>#p值</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第3章 · 统计基础与实验设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>3.3 A/B测试设计：样本量计算、分流方法、辛普森悖论陷阱</h3>
+        <p>从实验设计到结果解读，A/B测试全流程中的关键计算与常见陷阱。</p>
+        <div class="card-foot">
+          <span>#AB测试</span><span>#实验设计</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第3章 · 统计基础与实验设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>3.4 归因模型：首触、末触、线性、时间衰减、马尔可夫链归因</h3>
+        <p>五种主流归因模型的原理、计算方法与适用场景对比。</p>
+        <div class="card-foot">
+          <span>#归因模型</span><span>#马尔可夫链</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m1">
+        <div class="card-top">
+          <span class="card-module">第3章 · 统计基础与实验设计</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>3.5 相关与因果：如何用准实验方法逼近因果推断</h3>
+        <p>DID（双重差分）、断点回归等准实验方法的原理与业务应用。</p>
+        <div class="card-foot">
+          <span>#因果推断</span><span>#DID</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 2: 用户篇 -->
+      <div class="part-header" data-mod="m2">
+        <div class="part-num">第二篇</div>
+        <h2>用户篇：从获客到留存的全生命周期</h2>
       </div>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第4章 · 用户增长框架</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>4.1 AARRR模型详解与本土化适配</h3>
+        <p>经典海盗指标模型在中国零售场景下的本土化改造与实操要点。</p>
+        <div class="card-foot">
+          <span>#AARRR</span><span>#用户增长</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第4章 · 用户增长框架</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>4.2 用户分层方法：RFM模型的计算与业务校准</h3>
+        <p>RFM模型的计算细节、分箱策略与业务校准方法，避免"分了层但用不起来"。</p>
+        <div class="card-foot">
+          <span>#RFM</span><span>#用户分层</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第4章 · 用户增长框架</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>4.3 用户评分卡构建</h3>
+        <p>评分卡设计、权重确定、分箱方法——从原始数据到可用评分卡的完整流程。</p>
+        <div class="card-foot">
+          <span>#评分卡</span><span>#分箱方法</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第5章 · 用户行为与价值分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>5.1 Cohort分析：留存曲线、群组对比</h3>
+        <p>用Cohort分析拆解用户留存，识别留存拐点，对比不同群组的行为差异。</p>
+        <div class="card-foot">
+          <span>#Cohort</span><span>#留存分析</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第5章 · 用户行为与价值分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>5.2 LTV计算方法：历史法、预测法、概率模型法</h3>
+        <p>三种LTV计算方法的原理与对比，含BG/NBD等概率模型的详细推导。</p>
+        <div class="card-foot">
+          <span>#LTV</span><span>#用户价值</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第5章 · 用户行为与价值分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>5.3 复购间隔分析：购买周期识别与个性化触达窗口</h3>
+        <p>如何从交易数据中识别用户的购买周期，并据此设计个性化的触达时机。</p>
+        <div class="card-foot">
+          <span>#复购间隔</span><span>#触达窗口</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第6章 · 用户运营策略</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>6.1 用户流失预警与召回策略设计</h3>
+        <p>构建流失预警模型，设计分层召回策略，用数据驱动用户挽留。</p>
+        <div class="card-foot">
+          <span>#流失预警</span><span>#召回策略</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第6章 · 用户运营策略</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>6.2 会员体系分析：等级设计、权益ROI、会员vs非会员价值对比</h3>
+        <p>会员体系的核心分析框架：等级阶梯怎么设、权益投入产出怎么算。</p>
+        <div class="card-foot">
+          <span>#会员体系</span><span>#权益ROI</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m2">
+        <div class="card-top">
+          <span class="card-module">第6章 · 用户运营策略</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>6.3 案例：零食集合店会员复购提升项目复盘</h3>
+        <p>一个完整的会员复购提升项目复盘：从问题诊断到策略落地到效果评估。</p>
+        <div class="card-foot">
+          <span>#实战案例</span><span>#会员复购</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 3: 经济模型篇 -->
+      <div class="part-header" data-mod="m3">
+        <div class="part-num">第三篇</div>
+        <h2>经济模型篇：单元经济与盈利结构</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="m3">
+        <div class="card-top">
+          <span class="card-module">第7章 · 单元经济模型（UE模型）</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>7.1 UE模型的核心要素：CAC、LTV、毛利、回本周期</h3>
+        <p>单元经济模型的四大核心要素拆解，以及它们之间的动态关系。</p>
+        <div class="card-foot">
+          <span>#UE模型</span><span>#CAC</span><span>#LTV</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m3">
+        <div class="card-top">
+          <span class="card-module">第7章 · 单元经济模型（UE模型）</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>7.2 门店/SKU/会员多颗粒度UE模型搭建</h3>
+        <p>从门店到SKU到会员，不同颗粒度下UE模型的搭建方法与数据需求。</p>
+        <div class="card-foot">
+          <span>#多颗粒度</span><span>#模型搭建</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m3">
+        <div class="card-top">
+          <span class="card-module">第7章 · 单元经济模型（UE模型）</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>7.3 UE模型在扩张决策中的应用</h3>
+        <p>单店模型可复制性验证：如何用UE模型支撑规模化扩张决策。</p>
+        <div class="card-foot">
+          <span>#扩张决策</span><span>#可复制性</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m3">
+        <div class="card-top">
+          <span class="card-module">第7章 · 单元经济模型（UE模型）</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>7.4 案例：新店选址与单店模型测算</h3>
+        <p>一个完整的新店选址决策案例：从数据采集到模型测算到最终决策。</p>
+        <div class="card-foot">
+          <span>#实战案例</span><span>#选址测算</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 4: 流量与营销篇 -->
+      <div class="part-header" data-mod="m4">
+        <div class="part-num">第四篇</div>
+        <h2>流量与营销篇：从曝光到转化</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第8章 · 流量与转化分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>8.1 漏斗分析方法论：分层漏斗、断点诊断</h3>
+        <p>从单一漏斗到分层漏斗，如何精准定位转化断点并制定优化策略。</p>
+        <div class="card-foot">
+          <span>#漏斗分析</span><span>#断点诊断</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第8章 · 流量与转化分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>8.2 渠道ROI评估：多渠道归因下的预算分配</h3>
+        <p>多渠道归因模型下的ROI计算与预算分配优化方法。</p>
+        <div class="card-foot">
+          <span>#渠道ROI</span><span>#预算分配</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第8章 · 流量与转化分析</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>8.3 渠道质量评估：流量质量 vs 流量数量</h3>
+        <p>如何跳出"唯流量论"，建立流量质量的多维评估框架。</p>
+        <div class="card-foot">
+          <span>#渠道质量</span><span>#流量评估</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第9章 · 营销活动评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>9.1 活动ROI评估框架：增量销售 vs 自然销售剥离</h3>
+        <p>如何从活动总销售中剥离自然销售，计算真正的增量贡献与ROI。</p>
+        <div class="card-foot">
+          <span>#活动ROI</span><span>#增量销售</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第9章 · 营销活动评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>9.2 促销效果评估：折扣弹性、蚕食效应、提前消费效应</h3>
+        <p>促销活动的三大隐性成本：折扣弹性损失、蚕食效应、提前消费效应。</p>
+        <div class="card-foot">
+          <span>#促销评估</span><span>#蚕食效应</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m4">
+        <div class="card-top">
+          <span class="card-module">第9章 · 营销活动评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>9.3 A/B测试在营销场景的落地：素材测试、定价测试</h3>
+        <p>A/B测试在营销场景中的实操落地：从素材优化到定价策略的实验设计。</p>
+        <div class="card-foot">
+          <span>#AB测试</span><span>#营销实验</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 5: 商品与品类篇 -->
+      <div class="part-header" data-mod="m5">
+        <div class="part-num">第五篇</div>
+        <h2>商品与品类篇：选品、管理与汰换</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第10章 · 品类规划与管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>10.1 品类规划方法论：品类角色定义</h3>
+        <p>引流、利润、形象、季节——如何为每个品类定义清晰的角色与策略。</p>
+        <div class="card-foot">
+          <span>#品类规划</span><span>#品类角色</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第10章 · 品类规划与管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>10.2 品类结构分析：广度、深度、价格带分布</h3>
+        <p>用广度、深度、价格带三个维度拆解品类结构，发现优化机会。</p>
+        <div class="card-foot">
+          <span>#品类结构</span><span>#价格带</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第10章 · 品类规划与管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>10.3 品类管理（Category Management）实务框架</h3>
+        <p>品类管理的完整实务框架：从分析到计划到执行到复盘的闭环。</p>
+        <div class="card-foot">
+          <span>#品类管理</span><span>#实务框架</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第11章 · 商品价值评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>11.1 爆款商品识别方法（多维评分模型）</h3>
+        <p>用多维评分模型从销量、毛利、流量、复购四个维度综合识别爆款商品。</p>
+        <div class="card-foot">
+          <span>#爆款识别</span><span>#评分模型</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第11章 · 商品价值评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>11.2 商品贡献分析：销售额贡献 vs 毛利贡献 vs 流量贡献</h3>
+        <p>同一商品在不同维度下的贡献差异，以及如何平衡三种贡献的决策逻辑。</p>
+        <div class="card-foot">
+          <span>#商品贡献</span><span>#多维分析</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第11章 · 商品价值评估</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>11.3 商品关联分析：购物篮分析、关联规则挖掘（Apriori）</h3>
+        <p>用Apriori算法挖掘商品关联规则，支撑交叉销售与陈列优化。</p>
+        <div class="card-foot">
+          <span>#关联分析</span><span>#Apriori</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第12章 · 选品与商品生命周期管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>12.1 选品分析方法论：市场扫描、竞品对标、试销前评估</h3>
+        <p>选品三步法：从市场扫描到竞品对标到试销前评估的完整分析流程。</p>
+        <div class="card-foot">
+          <span>#选品方法</span><span>#竞品对标</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第12章 · 选品与商品生命周期管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>12.2 商品试卖设计：试卖期设定、评估指标、放量决策</h3>
+        <p>科学的试卖设计：如何设定试卖期、选择评估指标、做出放量决策。</p>
+        <div class="card-foot">
+          <span>#试卖设计</span><span>#放量决策</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第12章 · 选品与商品生命周期管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>12.3 商品汰换机制：淘汰评分模型、汰换节奏设计</h3>
+        <p>建立系统化的商品汰换机制：淘汰评分模型与汰换节奏的科学设计。</p>
+        <div class="card-foot">
+          <span>#商品汰换</span><span>#淘汰评分</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m5">
+        <div class="card-top">
+          <span class="card-module">第12章 · 选品与商品生命周期管理</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>12.4 案例：Bayesian平滑+动态分箱的商品汰换评分系统</h3>
+        <p>用贝叶斯平滑处理小样本偏差，用动态分箱替代固定阈值，构建更公平的商品汰换评分系统。</p>
+        <div class="card-foot">
+          <span>#贝叶斯平滑</span><span>#动态分箱</span><span>#实战案例</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 6: 供应链篇 -->
+      <div class="part-header" data-mod="m6">
+        <div class="part-num">第六篇</div>
+        <h2>供应链篇：库存与履约效率</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第13章 · 库存管理基础</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>13.1 库存周转率计算与诊断</h3>
+        <p>库存周转率的多种计算方法、行业基准与诊断思路。</p>
+        <div class="card-foot">
+          <span>#库存周转</span><span>#诊断方法</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第13章 · 库存管理基础</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>13.2 安全库存模型：需求波动 vs 供应波动下的安全库存计算</h3>
+        <p>如何在需求不确定性和供应不确定性下科学计算安全库存水平。</p>
+        <div class="card-foot">
+          <span>#安全库存</span><span>#波动模型</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第13章 · 库存管理基础</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>13.3 ABC分类与差异化库存策略</h3>
+        <p>用ABC分类法对库存进行分级管理，制定差异化的补货与周转策略。</p>
+        <div class="card-foot">
+          <span>#ABC分类</span><span>#差异化策略</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第14章 · 智能补货与异常诊断</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>14.1 智能补货模型：基于历史销量、季节性、促销计划的预测补货</h3>
+        <p>构建智能补货模型的核心逻辑：历史销量趋势、季节性因子、促销计划的融合预测。</p>
+        <div class="card-foot">
+          <span>#智能补货</span><span>#预测模型</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第14章 · 智能补货与异常诊断</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>14.2 缺货滞销分析：缺货损失测算、滞销预警机制</h3>
+        <p>缺货损失如何量化？滞销如何预警？建立库存异常的双向诊断机制。</p>
+        <div class="card-foot">
+          <span>#缺货损失</span><span>#滞销预警</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m6">
+        <div class="card-top">
+          <span class="card-module">第14章 · 智能补货与异常诊断</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>14.3 案例：门店级补货模型迭代与效果评估</h3>
+        <p>一个门店级补货模型从V1到V3的迭代过程，以及每版的效果评估对比。</p>
+        <div class="card-foot">
+          <span>#实战案例</span><span>#补货迭代</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Part 7: 综合实战篇 -->
+      <div class="part-header" data-mod="m7">
+        <div class="part-num">第七篇</div>
+        <h2>综合实战篇</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第15章 · 从0到1搭建业务分析体系</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>15.1 指标体系→BI看板→分析报告的完整闭环</h3>
+        <p>从指标体系设计到BI看板搭建到分析报告输出的完整闭环方法论。</p>
+        <div class="card-foot">
+          <span>#分析体系</span><span>#BI看板</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第15章 · 从0到1搭建业务分析体系</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>15.2 跨部门协作：如何让业务方"用起来"而非"看一眼"</h3>
+        <p>数据分析师如何推动跨部门协作，让分析成果真正落地而非停留在报告里。</p>
+        <div class="card-foot">
+          <span>#跨部门协作</span><span>#落地推动</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第15章 · 从0到1搭建业务分析体系</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>15.3 分析方法论的资产化：从一次性分析到可复用Skill/模板</h3>
+        <p>如何将一次性分析沉淀为可复用的方法论资产，提升团队整体效率。</p>
+        <div class="card-foot">
+          <span>#方法论资产化</span><span>#可复用模板</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第16章 · 数据分析师的能力进阶</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>16.1 从执行者到"分析翻译官"：业务理解力的培养</h3>
+        <p>数据分析师如何从单纯的执行者成长为连接业务与数据的"翻译官"。</p>
+        <div class="card-foot">
+          <span>#能力进阶</span><span>#业务理解</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第16章 · 数据分析师的能力进阶</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>16.2 AI时代的数据分析师：语义层、AI辅助分析、方法论沉淀的价值</h3>
+        <p>AI时代下数据分析师的角色变迁，以及语义层、AI辅助分析等新工具的价值。</p>
+        <div class="card-foot">
+          <span>#AI时代</span><span>#语义层</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="m7">
+        <div class="card-top">
+          <span class="card-module">第16章 · 数据分析师的能力进阶</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>16.3 写在最后：分析能力之外，你需要讲好一个故事</h3>
+        <p>数据分析师的终极能力：如何用数据讲好一个故事，驱动真正的决策与行动。</p>
+        <div class="card-foot">
+          <span>#数据叙事</span><span>#故事力</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <!-- Appendix -->
+      <div class="part-header" data-mod="all">
+        <div class="part-num">附录</div>
+        <h2>工具箱与参考资料</h2>
+      </div>
+
+      <a class="article-card" href="#" data-mod="all">
+        <div class="card-top">
+          <span class="card-module">附录</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>A. 常用统计公式速查</h3>
+        <p>业务数据分析中最常用的统计公式汇总，一页纸速查手册。</p>
+        <div class="card-foot">
+          <span>#统计公式</span><span>#速查</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="all">
+        <div class="card-top">
+          <span class="card-module">附录</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>B. SQL/Hive常用分析模板</h3>
+        <p>含多CTE试卖分析框架思路在内的常用SQL/Hive分析模板集。</p>
+        <div class="card-foot">
+          <span>#SQL模板</span><span>#Hive</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="all">
+        <div class="card-top">
+          <span class="card-module">附录</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>C. 指标口径文档模板</h3>
+        <p>标准化的指标口径文档模板，可直接复用于团队指标管理。</p>
+        <div class="card-foot">
+          <span>#口径文档</span><span>#模板</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
+      <a class="article-card" href="#" data-mod="all">
+        <div class="card-top">
+          <span class="card-module">附录</span>
+          <span class="status-badge draft">待发布</span>
+        </div>
+        <h3>D. 推荐阅读</h3>
+        <p>零售数据分析领域的精选书单、文章与工具推荐。</p>
+        <div class="card-foot">
+          <span>#推荐阅读</span><span>#资源</span>
+          <span class="arrow">阅读全文 →</span>
+        </div>
+      </a>
+
     </div>
   </section>
 
-  <!-- Six Roles -->
-  <section id="roles">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">审查机制</p>
-        <h2 class="section-title">六角色联合审查</h2>
-        <p class="section-desc">生成每个模块时，内化六个角色视角自动完成联合校验，直接体现在输出质量中。</p>
-      </div>
-      <div class="roles-grid animate-in">
-        <div class="glass-card role-card">
-          <div class="role-emoji">🔬</div>
-          <div>
-            <h3>互联网数据科学家</h3>
-            <p>指标统计严谨性、用户分层逻辑、归因分析模块完整性</p>
-          </div>
-        </div>
-        <div class="glass-card role-card">
-          <div class="role-emoji">📈</div>
-          <div>
-            <h3>消费行业证券分析师</h3>
-            <p>核心指标口径可与上市公司公告对齐、趋势外推视图、行业可比性</p>
-          </div>
-        </div>
-        <div class="glass-card role-card">
-          <div class="role-emoji">🏪</div>
-          <div>
-            <h3>连锁零售经营分析负责人</h3>
-            <p>门店/区域下钻逻辑完整、异动预警覆盖、经营动作可落地</p>
-          </div>
-        </div>
-        <div class="glass-card role-card">
-          <div class="role-emoji">📋</div>
-          <div>
-            <h3>数据产品经理</h3>
-            <p>每个指标定义完整、数据血缘清晰、口径歧义消除</p>
-          </div>
-        </div>
-        <div class="glass-card role-card">
-          <div class="role-emoji">🏗️</div>
-          <div>
-            <h3>BI 解决方案架构师</h3>
-            <p>Quick BI 技术可行性、数据刷新频率标注、权限分层设计</p>
-          </div>
-        </div>
-        <div class="glass-card role-card">
-          <div class="role-emoji">💼</div>
-          <div>
-            <h3>麦肯锡零售咨询顾问</h3>
-            <p>故事线结构优化、高管页面"三秒原则"、战略洞察前置</p>
-          </div>
-        </div>
-      </div>
+  <!-- Trust Band -->
+  <div class="trust-band">
+    <div class="eyebrow">关于这本书</div>
+    <h2>方法论，不是话术</h2>
+    <p>这里不卖课、不接广告，所有内容免费公开。源于一线实战，回归一线实战。</p>
+    <div class="stat-row" style="max-width: 480px;">
+      <div class="stat-cell"><div class="num">¥0</div><div class="label">完全免费</div></div>
+      <div class="stat-cell"><div class="num">MIT</div><div class="label">开源协议</div></div>
+      <div class="stat-cell"><div class="num">GitHub</div><div class="label">托管地址</div></div>
     </div>
-  </section>
+  </div>
 
-  <!-- Workflow Steps -->
-  <section id="workflow">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">标准化流程</p>
-        <h2 class="section-title">五步工作流</h2>
-        <p class="section-desc">从业务诊断到数据口径说明，每一步都有明确的目标和输出。</p>
-      </div>
-      <div class="steps-timeline animate-in">
-        <!-- Step 1 -->
-        <div class="step-item">
-          <div class="step-marker">
-            <div class="step-num">1</div>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-content">
-            <h3>业务场景诊断</h3>
-            <p class="step-goal">明确看板的使用场景、汇报对象、核心业务问题</p>
-            <p>必须明确 4 个维度：行业、看板用途、主要使用角色、当前最迫切的业务问题。</p>
-            <ul>
-              <li>行业：从 6 个行业中选择，或组合</li>
-              <li>看板用途：日常监控 / 专题分析 / 高管汇报 / 对外披露</li>
-              <li>使用角色：CEO / 运营总监 / 区域经理 / 分析师</li>
-              <li>业务问题：业绩下滑归因 / 新品追踪 / 门店扩张评估等</li>
-            </ul>
-          </div>
-        </div>
-        <!-- Step 2 -->
-        <div class="step-item">
-          <div class="step-marker">
-            <div class="step-num">2</div>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-content">
-            <h3>指标体系生成</h3>
-            <p class="step-goal">输出三层指标体系，每层指标有明确的业务解读</p>
-            <p>采用三层结构，从战略到诊断逐层细化：</p>
-            <ul>
-              <li><strong>战略层（高管）：</strong>3-5 个指标，反映全局健康度</li>
-              <li><strong>经营层（业务负责人）：</strong>8-15 个指标，反映过程质量</li>
-              <li><strong>诊断层（分析师）：</strong>15-30 个指标，用于问题定位</li>
-            </ul>
-          </div>
-        </div>
-        <!-- Step 3 -->
-        <div class="step-item">
-          <div class="step-marker">
-            <div class="step-num">3</div>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-content">
-            <h3>页面结构设计</h3>
-            <p class="step-goal">确定看板共几张页面、每页主题、信息优先级</p>
-            <p>遵循标准页面设计原则：</p>
-            <ul>
-              <li><strong>首页：</strong>战略总览，三秒看懂核心结论</li>
-              <li><strong>二至四页：</strong>经营专题，支持下钻</li>
-              <li><strong>末页：</strong>诊断工具页，分析师自助探索用</li>
-            </ul>
-          </div>
-        </div>
-        <!-- Step 4 -->
-        <div class="step-item">
-          <div class="step-marker">
-            <div class="step-num">4</div>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-content">
-            <h3>Quick BI 可视化方案</h3>
-            <p class="step-goal">为每张页面指定 Quick BI 组件、布局、联动/钻取逻辑</p>
-            <p>根据分析场景选择合适的可视化组件，详见下方组件映射表。</p>
-          </div>
-        </div>
-        <!-- Step 5 -->
-        <div class="step-item">
-          <div class="step-marker">
-            <div class="step-num">5</div>
-          </div>
-          <div class="step-content">
-            <h3>数据口径说明</h3>
-            <p class="step-goal">为每个指标生成完整的口径定义，消除歧义</p>
-            <p>确保每个指标都有清晰的定义、计算逻辑、数据来源和更新频率。</p>
-          </div>
-        </div>
-      </div>
+  <!-- FAQ Section -->
+  <section class="section" id="faq">
+    <div class="section-title">
+      <h2>常见问题</h2>
     </div>
-  </section>
-
-  <!-- Components Table -->
-  <section id="components">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">可视化方案</p>
-        <h2 class="section-title">Quick BI 组件映射</h2>
-        <p class="section-desc">根据不同的分析场景，推荐最合适的 Quick BI 可视化组件。</p>
-      </div>
-      <div class="glass-card animate-in" style="padding: 0; overflow: hidden;">
-        <div class="table-wrapper">
-          <table class="components-table">
-            <thead>
-              <tr>
-                <th>分析场景</th>
-                <th>推荐组件</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>KPI 总览</td><td>指标看板（Metric Card）</td></tr>
-              <tr><td>趋势分析</td><td>折线图 / 面积图</td></tr>
-              <tr><td>结构分析</td><td>饼图 / 环形图 / 树状图</td></tr>
-              <tr><td>对比分析</td><td>柱状图 / 条形图</td></tr>
-              <tr><td>矩阵分析</td><td>交叉表 / 热力图</td></tr>
-              <tr><td>地理分布</td><td>地图（气泡/热力/区域色阶）</td></tr>
-              <tr><td>排名分析</td><td>水平条形图 + 条件格式</td></tr>
-              <tr><td>漏斗分析</td><td>漏斗图</td></tr>
-              <tr><td>散点分析</td><td>散点图 / 气泡图</td></tr>
-              <tr><td>多维下钻</td><td>交叉表 + 钻取路径设置</td></tr>
-              <tr><td>异动预警</td><td>指标看板 + 条件告警色</td></tr>
-            </tbody>
-          </table>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>这本书适合谁读？</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>适合零售行业的数据分析师、业务分析师、运营人员，以及任何需要在业务场景中做数据驱动决策的人。书中案例以零食连锁零售为主，但方法论可迁移到其他零售业态。</p>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Deliverables -->
-  <section id="deliverables">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">交付物</p>
-        <h2 class="section-title">标准化输出模板</h2>
-        <p class="section-desc">三种标准化交付物，确保项目交付质量和一致性。</p>
-      </div>
-      <div class="deliverables-grid animate-in">
-        <div class="glass-card deliverable-card">
-          <div class="d-icon">📄</div>
-          <h3>PRD 文档</h3>
-          <p>完整的产品需求文档模板，包含业务背景、目标用户、功能需求、数据来源、验收标准等核心章节，确保需求传达无歧义。</p>
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>需要什么基础？</span>
+          <span class="faq-icon">+</span>
         </div>
-        <div class="glass-card deliverable-card">
-          <div class="d-icon">📊</div>
-          <h3>看板设计稿</h3>
-          <p>Quick BI 组件级别的看板设计模板，定义页面布局、图表类型、颜色规范、交互逻辑和钻取路径。</p>
-        </div>
-        <div class="glass-card deliverable-card">
-          <div class="d-icon">📋</div>
-          <h3>指标字典</h3>
-          <p>标准化的指标定义表格，包含指标名称、业务含义、计算公式、数据来源、更新频率和负责人信息。</p>
+        <div class="faq-answer">
+          <p>需要基础的SQL能力和基本的统计学概念。书中会尽量用业务语言解释技术概念，但完全零基础阅读可能会有难度。建议至少有半年以上的数据分析工作经验。</p>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Implementation Notes -->
-  <section id="notes">
-    <div class="section-inner">
-      <div class="animate-in">
-        <p class="section-label">实现要点</p>
-        <h2 class="section-title">Quick BI 注意事项</h2>
-        <p class="section-desc">确保看板在 Quick BI 中高效运行的关键技术要点。</p>
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>内容会持续更新吗？</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>是的，这是一个持续更新的项目。新的业务场景、新的方法论实践会不断补充进来。每篇文章底部都有版本号和更新日期，方便追踪变化。</p>
+        </div>
       </div>
-      <div class="notes-grid animate-in">
-        <div class="glass-card note-card">
-          <div class="note-num">1</div>
-          <h4>数据集加速</h4>
-          <p>优先使用 Quick BI 数据集"加速"功能，对大宽表预聚合，提升查询性能。</p>
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>可以转载或引用吗？</span>
+          <span class="faq-icon">+</span>
         </div>
-        <div class="glass-card note-card">
-          <div class="note-num">2</div>
-          <h4>全局联动</h4>
-          <p>全局筛选器（时间、区域、品类）放在每页顶部，联动所有图表，保持分析一致性。</p>
+        <div class="faq-answer">
+          <p>本书采用MIT开源协议，可以自由转载和引用，但请保留原文出处链接。如果用于商业培训课程，请注明出处。</p>
         </div>
-        <div class="glass-card note-card">
-          <div class="note-num">3</div>
-          <h4>钻取路径</h4>
-          <p>地理维度按 全国→大区→省份→城市→门店 设置钻取层级，支持逐层下钻。</p>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>为什么选择零食零售作为案例？</span>
+          <span class="faq-icon">+</span>
         </div>
-        <div class="glass-card note-card">
-          <div class="note-num">4</div>
-          <h4>刷新频率</h4>
-          <p>实时（≤1h）：交易金额、库存预警；日更新（T+1）：门店指标；周/月更新：竞争对标。</p>
-        </div>
-        <div class="glass-card note-card">
-          <div class="note-num">5</div>
-          <h4>移动端适配</h4>
-          <p>高管总览页需设置 Quick BI 移动端布局，优先展示 Top3 KPI 核心指标。</p>
+        <div class="faq-answer">
+          <p>因为这是作者九年一线经验的沉淀。零食零售是一个"麻雀虽小、五脏俱全"的业态——SKU多、周转快、促销频繁、用户行为数据丰富，几乎涵盖了零售数据分析的所有核心场景。</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer>
-    <div class="footer-logo">BI Skill</div>
-    <p>FMCG & 零售 BI 看板标准化解决方案</p>
+  <footer class="footer">
+    <div>© 2024 小田数字笔记 · 业务数据计算方法与实践</div>
+    <div class="footer-links">
+      <a href="#">GitHub</a>
+      <a href="#">公众号</a>
+    </div>
   </footer>
 
-  <!-- Scroll Animation Script -->
-  <script>
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-    document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
-
-    // Nav background on scroll
-    const nav = document.querySelector('nav');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        nav.style.background = 'rgba(250, 250, 250, 0.85)';
-      } else {
-        nav.style.background = 'rgba(250, 250, 250, 0.7)';
-      }
-    });
-  </script>
-
+  <script src="assets/main.js"></script>
 </body>
 </html>
